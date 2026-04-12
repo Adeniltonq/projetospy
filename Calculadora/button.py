@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QPushButton, QGridLayout
 
 from variables import MEDIUM_FONT_SIZE
+from utils import isNotNumOrDotAndIsEmpty
 
 
 class  Button(QPushButton):
@@ -12,7 +13,6 @@ class  Button(QPushButton):
     def configStyle(self):
         self.font().setPixelSize(MEDIUM_FONT_SIZE)
         self.setMinimumSize(75,75)
-        self.setProperty('cssClass', 'specialButton')
 
 class ButtonsGrid(QGridLayout):
     def __init__(self,*args ,**kwargs):
@@ -31,6 +31,10 @@ class ButtonsGrid(QGridLayout):
         for i, row in enumerate(self._grid_mask):
             for j ,button_text in enumerate(row):
                 button = Button(button_text)
+
+                if isNotNumOrDotAndIsEmpty(button_text):
+                      button.setStyleSheet("background-color: blue; color: white;")
+
                 self.addWidget(button, i, j)
                 
 
