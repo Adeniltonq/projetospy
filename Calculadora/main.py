@@ -1,5 +1,5 @@
 import sys
-
+from typing import TYPE_CHECKING
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication 
 
@@ -10,6 +10,10 @@ from main_window import MainWindow
 
 from styles import setupTheme
 from variables import WINDOW_ICON_DIR
+
+if TYPE_CHECKING:
+    from display import Display
+    from info import Info
  
 if __name__ == '__main__':
     
@@ -30,7 +34,7 @@ if __name__ == '__main__':
     display = Display()
     window.addWidgetToVLayout(display)
  
-    buttonsGrid = ButtonsGrid(display)
+    buttonsGrid = ButtonsGrid(display, info)
     window.vLayout.addLayout(buttonsGrid)
  
    
