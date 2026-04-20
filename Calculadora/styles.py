@@ -20,8 +20,8 @@ qss = f"""
  
  
 def setupTheme(app):
-    # Aplicar o estilo escuro do qdarkstyle
+    
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyside6())
  
-    # Sobrepor com o QSS personalizado para estilização adicional
+   
     app.setStyleSheet(app.styleSheet() + qss)
