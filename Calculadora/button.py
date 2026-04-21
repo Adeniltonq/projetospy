@@ -1,5 +1,6 @@
 
 from typing import TYPE_CHECKING
+import math
 
 from PySide6.QtWidgets import QPushButton, QGridLayout
 from PySide6.QtCore import Slot
@@ -29,7 +30,7 @@ class ButtonsGrid(QGridLayout):
         super().__init__(*args, **kwargs)
 
         self._grid_mask = [
-            ['C', "<", "^", "/"],
+            ['C', "D", "^", "/"],
             ['7', '8', '9', '*'],
             ['4', '5', '6', '-'],
             ['1', '2', '3', '+'],
@@ -40,6 +41,11 @@ class ButtonsGrid(QGridLayout):
         self.info = info
         self._equation = ''
         self._makeGrid()
+        self._left = None
+        self._right =None
+        self._op = None
+        self._equationInitialValue = "Sua conta"
+        self.equation = self._equationInitialValue
 
     @property
     def equation(self):
@@ -77,6 +83,17 @@ class ButtonsGrid(QGridLayout):
             slot = self._makeSlot(self._clear, 'Mensagem')
             self._connectButtonClicked(button, slot)
 
+        if text == 'D':
+         
+            self._connectButtonClicked(button, self.display.backspace)
+           
+
+        if text in '+-/*^':
+            self._connectButtonClicked(button, self._makeSlot(self._operatorCliked, button))
+
+        if text in '=':
+            self._connectButtonClicked(button, self._eq)
+
     def _makeSlot(self, func, *args, **kwargs):
         @Slot()
         def realSlot(checked=False):
@@ -96,3 +113,52 @@ class ButtonsGrid(QGridLayout):
     def _clear(self, msg):
         print("Vou fazeer algo", msg)
         self.display.clear()
+        self.equation = self._equationInitialValue
+
+    def _operatorCliked(self,button):
+        buttonText = button.text()
+        displayText = self.display.text()
+        self.display.clear()
+        
+
+
+        if not isValidNumber(displayText) and  self._left is None:
+            self._left = None
+            self._right =None
+            self._op = None
+          
+            return
+        
+        if self._left is None:
+            self._left = float(displayText)
+            
+
+        self._op = buttonText
+        self.equation = f'{self._left} {self._op} ??'
+
+    def _eq(self):
+        displayText = self.display.text()
+
+        if not isValidNumber(displayText):
+            print('Sem nada pra fazer')
+            return
+    
+        self._right = float(displayText)
+        self.equation = f'{self._left} {self._op} {self._right}'
+        result = 'error'
+        self._left: float
+        try:
+            if '^' in self.equation:
+                result = math.pow(self._left, self._right)
+            else:
+                result = eval(self.equation)
+        except ZeroDivisionError:
+                print('Erro: divisão por zero')
+        
+        self.display.clear()
+        self.info.setText(f'{self.equation} = {result}')
+        self._left = result
+        self._right = None
+
+        if result == 'error':
+            self._left = None
