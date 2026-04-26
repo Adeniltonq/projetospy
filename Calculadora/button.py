@@ -2,8 +2,9 @@
 from typing import TYPE_CHECKING
 import math
 
-from PySide6.QtWidgets import QPushButton, QGridLayout
+from PySide6.QtWidgets import QPushButton, QGridLayout, QMessageBox
 from PySide6.QtCore import Slot
+
 
 from variables import MEDIUM_FONT_SIZE
 from utils import isNotNumOrDotAndIsEmpty, isValidNumber
@@ -11,6 +12,7 @@ from utils import isNotNumOrDotAndIsEmpty, isValidNumber
 if TYPE_CHECKING:
     from display import Display
     from info import Info
+    from main_window import MainWindow
 
 
 class Button(QPushButton):
@@ -26,7 +28,7 @@ class Button(QPushButton):
 
 
 class ButtonsGrid(QGridLayout):
-    def __init__(self, display: 'Display', info: 'Info', *args, **kwargs):
+    def __init__(self, display: 'Display', info: 'Info', window: 'MainWindow',*args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._grid_mask = [
@@ -39,6 +41,7 @@ class ButtonsGrid(QGridLayout):
 
         self.display = display
         self.info = info
+        self.window = window
         self._equation = ''
         self._makeGrid()
         self._left = None
@@ -56,7 +59,16 @@ class ButtonsGrid(QGridLayout):
         self._equation = value
         self.info.setText(value)
 
+    def vouApagarVoce(self):
+        print("Sinal recebido")
+
     def _makeGrid(self):
+
+        self.display.eqRequested.connect(self.vouApagarVoce)
+        self.display.eqPressed.connect(self.display.backspace)
+        self.display.delPressed.connect(self.vouApagarVoce)
+        self.display.inputPressed.connect(self.vouApagarVoce)
+
         for i, row in enumerate(self._grid_mask):
             for j, button_text in enumerate(row):
                 if button_text == '':
@@ -91,7 +103,7 @@ class ButtonsGrid(QGridLayout):
         if text in '+-/*^':
             self._connectButtonClicked(button, self._makeSlot(self._operatorCliked, button))
 
-        if text in '=':
+        if text == '=':
             self._connectButtonClicked(button, self._eq)
 
     def _makeSlot(self, func, *args, **kwargs):
@@ -140,7 +152,7 @@ class ButtonsGrid(QGridLayout):
         displayText = self.display.text()
 
         if not isValidNumber(displayText):
-            print('Sem nada pra fazer')
+            self._showError("Voce não digitou nada")
             return
     
         self._right = float(displayText)
@@ -162,3 +174,10 @@ class ButtonsGrid(QGridLayout):
 
         if result == 'error':
             self._left = None
+
+    def _showError(self, text):
+        msgBox  =self.window.makeMsgBox()
+        msgBox.setText(text)
+        msgBox.setIcon(msgBox.Icon.Warning)
+        msgBox.exec()
+    
